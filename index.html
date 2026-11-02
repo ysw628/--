@@ -126,7 +126,7 @@
             <option value="간식">☕ 간식</option>
           </select>
           <div class="relative">
-            <input type="text" id="foodInput" placeholder="어떤 음식이든 입력해보세요 (예: 마라탕 1그릇, 삼겹살 200g)" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-emerald-500 pr-8">
+            <input type="text" id="foodInput" placeholder="음식명과 양 입력 (예: 떡볶이 1인분, 삼겹살 200g)" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-emerald-500 pr-8">
             <button id="clearInputBtn" type="button" class="hidden absolute right-2.5 top-3 text-slate-400 hover:text-slate-600">
               <i data-lucide="x" class="w-4 h-4"></i>
             </button>
@@ -137,7 +137,7 @@
         <div class="flex flex-wrap gap-1.5 pt-1" id="quickTags">
           <span class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full cursor-pointer hover:bg-slate-200 transition" onclick="setQuickInput('쌀밥 1공기')">+ 쌀밥 1공기</span>
           <span class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full cursor-pointer hover:bg-slate-200 transition" onclick="setQuickInput('닭가슴살 100g')">+ 닭가슴살 100g</span>
-          <span class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full cursor-pointer hover:bg-slate-200 transition" onclick="setQuickInput('마라탕 1그릇')">+ 마라탕</span>
+          <span class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full cursor-pointer hover:bg-slate-200 transition" onclick="setQuickInput('떡볶이 1인분')">+ 떡볶이</span>
           <span class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full cursor-pointer hover:bg-slate-200 transition" onclick="setQuickInput('아메리카노 1잔')">+ 아메리카노</span>
         </div>
 
@@ -263,12 +263,8 @@
 
     if ('serviceWorker' in navigator) {
       const swCode = `
-        self.addEventListener('install', (e) => {
-          e.waitUntil(self.skipWaiting());
-        });
-        self.addEventListener('fetch', (e) => {
-          e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
-        });
+        self.addEventListener('install', (e) => { e.waitUntil(self.skipWaiting()); });
+        self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });
       `;
       const swBlob = new Blob([swCode], { type: 'application/javascript' });
       const swURL = URL.createObjectURL(swBlob);
@@ -297,61 +293,91 @@
     document.getElementById('pwaInstallBtn').addEventListener('click', installPWA);
     document.getElementById('pwaBannerBtn').addEventListener('click', installPWA);
 
-    // --- 2. Database & Comprehensive Food Categorization ---
+    // --- 2. Expanded Korean Food Database (상세 한국 음식 DB) ---
     const foodDatabase = {
-      // 밥/면류
+      // 밥류
       '쌀밥': { cal: 300, carbs: 65, protein: 6, fat: 1 },
+      '백미밥': { cal: 300, carbs: 65, protein: 6, fat: 1 },
       '현미밥': { cal: 280, carbs: 58, protein: 7, fat: 2 },
-      '볶음밥': { cal: 500, carbs: 70, protein: 12, fat: 18 },
-      '비빔밥': { cal: 550, carbs: 80, protein: 18, fat: 15 },
+      '잡곡밥': { cal: 290, carbs: 60, protein: 7, fat: 2 },
+      '볶음밥': { cal: 520, carbs: 72, protein: 12, fat: 18 },
+      '김치볶음밥': { cal: 500, carbs: 70, protein: 11, fat: 16 },
+      '비빔밥': { cal: 560, carbs: 82, protein: 18, fat: 15 },
       '김밥': { cal: 480, carbs: 75, protein: 14, fat: 12 },
-      '라면': { cal: 500, carbs: 75, protein: 10, fat: 18 },
-      '짜장면': { cal: 650, carbs: 100, protein: 18, fat: 20 },
-      '짬뽕': { cal: 550, carbs: 85, protein: 20, fat: 15 },
-      '칼국수': { cal: 420, carbs: 80, protein: 12, fat: 5 },
-      '우동': { cal: 400, carbs: 78, protein: 10, fat: 4 },
-      '파스타': { cal: 600, carbs: 75, protein: 18, fat: 22 },
-      '마라탕': { cal: 600, carbs: 45, protein: 25, fat: 35 },
+      '참치김밥': { cal: 540, carbs: 72, protein: 18, fat: 18 },
+      '삼각김밥': { cal: 210, carbs: 36, protein: 5, fat: 4 },
+      '초밥': { cal: 400, carbs: 68, protein: 18, fat: 4 },
+      '덮밥': { cal: 620, carbs: 85, protein: 22, fat: 18 },
+      '카레': { cal: 550, carbs: 80, protein: 14, fat: 16 },
+      '짜장밥': { cal: 600, carbs: 90, protein: 15, fat: 18 },
+
+      // 면류
+      '라면': { cal: 520, carbs: 76, protein: 10, fat: 18 },
+      '신라면': { cal: 510, carbs: 75, protein: 10, fat: 17 },
+      '짜파게티': { cal: 610, carbs: 88, protein: 11, fat: 20 },
+      '불닭볶음면': { cal: 530, carbs: 82, protein: 9, fat: 19 },
+      '짜장면': { cal: 670, carbs: 105, protein: 18, fat: 20 },
+      '짬뽕': { cal: 560, carbs: 86, protein: 21, fat: 15 },
+      '칼국수': { cal: 430, carbs: 82, protein: 13, fat: 5 },
+      '우동': { cal: 410, carbs: 79, protein: 10, fat: 4 },
+      '잔치국수': { cal: 380, carbs: 74, protein: 12, fat: 3 },
+      '비빔국수': { cal: 480, carbs: 85, protein: 11, fat: 8 },
+      '냉면': { cal: 450, carbs: 88, protein: 14, fat: 3 },
+      '파스타': { cal: 620, carbs: 78, protein: 19, fat: 22 },
+      '알리오올리오': { cal: 520, carbs: 65, protein: 10, fat: 24 },
+      '크림파스타': { cal: 720, carbs: 75, protein: 18, fat: 35 },
+      '마라탕': { cal: 650, carbs: 48, protein: 26, fat: 38 },
+      '마라샹궈': { cal: 850, carbs: 50, protein: 32, fat: 58 },
+
+      // 분식
+      '떡볶이': { cal: 380, carbs: 78, protein: 8, fat: 4 },
+      '로제떡볶이': { cal: 580, carbs: 75, protein: 12, fat: 25 },
+      '순대': { cal: 320, carbs: 42, protein: 12, fat: 11 },
+      '모둠튀김': { cal: 450, carbs: 48, protein: 8, fat: 25 },
+      '어묵': { cal: 130, carbs: 12, protein: 8, fat: 5 },
 
       // 고기/메인 요리
-      '제육볶음': { cal: 350, carbs: 12, protein: 28, fat: 20 },
+      '제육볶음': { cal: 380, carbs: 14, protein: 28, fat: 22 },
       '닭가슴살': { cal: 165, carbs: 0, protein: 31, fat: 3.6 },
-      '삼겹살': { cal: 330, carbs: 0, protein: 17, fat: 29 },
-      '돈까스': { cal: 600, carbs: 50, protein: 25, fat: 32 },
-      '치킨': { cal: 290, carbs: 15, protein: 20, fat: 16 },
-      '피자': { cal: 280, carbs: 30, protein: 12, fat: 12 },
-      '햄버거': { cal: 500, carbs: 45, protein: 22, fat: 25 },
-      '족발': { cal: 400, carbs: 5, protein: 32, fat: 28 },
-      '보쌈': { cal: 380, carbs: 4, protein: 30, fat: 26 },
-      '소불고기': { cal: 320, carbs: 15, protein: 26, fat: 18 },
+      '삼겹살': { cal: 520, carbs: 0, protein: 24, fat: 46 },
+      '목살': { cal: 380, carbs: 0, protein: 28, fat: 28 },
+      '돼지갈비': { cal: 450, carbs: 18, protein: 30, fat: 28 },
+      '소불고기': { cal: 340, carbs: 16, protein: 26, fat: 18 },
+      '돈까스': { cal: 650, carbs: 52, protein: 26, fat: 34 },
+      '치킨': { cal: 310, carbs: 16, protein: 22, fat: 18 },
+      '양념치킨': { cal: 380, carbs: 28, protein: 20, fat: 20 },
+      '후라이드치킨': { cal: 320, carbs: 14, protein: 22, fat: 19 },
+      '피자': { cal: 290, carbs: 32, protein: 13, fat: 12 },
+      '햄버거': { cal: 520, carbs: 46, protein: 24, fat: 26 },
+      '족발': { cal: 420, carbs: 5, protein: 34, fat: 29 },
+      '보쌈': { cal: 390, carbs: 4, protein: 31, fat: 27 },
+      '찜닭': { cal: 480, carbs: 32, protein: 36, fat: 21 },
+      '닭갈비': { cal: 420, carbs: 22, protein: 32, fat: 22 },
 
-      // 찌개/국/반찬
-      '김치찌개': { cal: 200, carbs: 10, protein: 15, fat: 10 },
-      '된장찌개': { cal: 150, carbs: 12, protein: 12, fat: 6 },
-      '순두부찌개': { cal: 220, carbs: 10, protein: 16, fat: 12 },
+      // 찌개/국
+      '김치찌개': { cal: 210, carbs: 11, protein: 16, fat: 11 },
+      '된장찌개': { cal: 160, carbs: 13, protein: 13, fat: 6 },
+      '순두부찌개': { cal: 230, carbs: 10, protein: 17, fat: 13 },
+      '부대찌개': { cal: 420, carbs: 28, protein: 22, fat: 24 },
+      '삼계탕': { cal: 680, carbs: 35, protein: 62, fat: 30 },
+      '갈비탕': { cal: 450, carbs: 12, protein: 38, fat: 28 },
+      '설렁탕': { cal: 380, carbs: 14, protein: 28, fat: 22 },
+      '뼈해장국': { cal: 520, carbs: 18, protein: 42, fat: 30 },
+
+      // 가벼운 반찬/음료/간식
       '계란후라이': { cal: 90, carbs: 0.4, protein: 6, fat: 7 },
-      '계란말이': { cal: 160, carbs: 2, protein: 12, fat: 11 },
+      '삶은계란': { cal: 75, carbs: 0.5, protein: 6, fat: 5 },
       '샐러드': { cal: 120, carbs: 10, protein: 3, fat: 7 },
-
-      // 음료/디저트
       '아메리카노': { cal: 10, carbs: 1, protein: 0.5, fat: 0 },
-      '라떼': { cal: 180, carbs: 14, protein: 8, fat: 9 },
       '카페라떼': { cal: 180, carbs: 14, protein: 8, fat: 9 },
       '바나나': { cal: 90, carbs: 23, protein: 1, fat: 0.3 },
-      '사과': { cal: 80, carbs: 21, protein: 0.4, fat: 0.2 }
+      '사과': { cal: 80, carbs: 21, protein: 0.4, fat: 0.2 },
+      '식빵': { cal: 120, carbs: 22, protein: 4, fat: 2 }
     };
 
     let userProfile = JSON.parse(localStorage.getItem('cal_user_profile')) || {
-      gender: 'male',
-      age: 25,
-      height: 170,
-      weight: 65,
-      activity: 1.55,
-      goal: 'maintain',
-      targetCal: 2000,
-      targetCarbs: 250,
-      targetProtein: 100,
-      targetFat: 55
+      gender: 'male', age: 25, height: 170, weight: 65, activity: 1.55, goal: 'maintain',
+      targetCal: 2000, targetCarbs: 250, targetProtein: 100, targetFat: 55
     };
 
     let selectedDate = new Date().toISOString().split('T')[0];
@@ -384,10 +410,7 @@
 
       return {
         gender: g, age, height: h, weight: w, activity: act, goal,
-        targetCal: tdee,
-        targetCarbs: carbsG,
-        targetProtein: proteinG,
-        targetFat: fatG
+        targetCal: tdee, targetCarbs: carbsG, targetProtein: proteinG, targetFat: fatG
       };
     }
 
@@ -488,47 +511,52 @@
       lucide.createIcons();
     }
 
-    // --- 5. AI / Universal Food Parsing System ---
+    // --- 5. Improved Smart Food Parsing System ---
     function parseFoodInput(text) {
       let foodName = text.trim();
       let portion = 1.0;
 
-      // 단위 수량 파싱 (공기, 잔, 개, g 등)
+      // 단위 수량 파싱 (공기, 잔, 개, 그릇, 인분, g 등)
       const match = text.match(/([\d\.]+)\s*(공기|잔|개|그릇|인분|g|g개|조각|줄)?$/);
       if (match) {
         portion = parseFloat(match[1]);
         if (match[2] === 'g') {
-          portion = portion / 100; // 100g 기준
+          portion = portion / 100; // 100g 단위 기준
         }
         foodName = text.replace(match[0], '').trim();
       }
 
       let baseData = null;
 
-      // 1. 기존 DB에서 탐색
+      // 1. 데이터베이스 단어 부분 매칭 (가장 길게 일치하는 키워드 선택)
+      let bestMatchKey = '';
       for (let key in foodDatabase) {
-        if (foodName.includes(key)) {
-          baseData = foodDatabase[key];
-          foodName = key;
-          break;
+        if (foodName.includes(key) && key.length > bestMatchKey.length) {
+          bestMatchKey = key;
         }
       }
 
-      // 2. DB에 없는 신규 음신의 경우 범용 칼로리 추정 알고리즘 적용
+      if (bestMatchKey) {
+        baseData = foodDatabase[bestMatchKey];
+      }
+
+      // 2. DB 매칭 실패 시 음식 카테고리별 스마트 지능형 추정
       if (!baseData) {
-        let estCal = 300;
+        let estCal = 350;
         let cRatio = 0.5, pRatio = 0.2, fRatio = 0.3;
 
-        if (/튀김|치킨|돈까스|전|파스타|버거|피자|마라/i.test(foodName)) {
-          estCal = 550; cRatio = 0.4; pRatio = 0.2; fRatio = 0.4;
-        } else if (/고기|구이|갈비|족발|보쌈|스테이크|닭|계란/i.test(foodName)) {
-          estCal = 400; cRatio = 0.1; pRatio = 0.5; fRatio = 0.4;
-        } else if (/국|찌개|탕|스프/i.test(foodName)) {
-          estCal = 250; cRatio = 0.4; pRatio = 0.3; fRatio = 0.3;
-        } else if (/채소|샐러드|나물|과일|아메리카노|차/i.test(foodName)) {
-          estCal = 100; cRatio = 0.7; pRatio = 0.2; fRatio = 0.1;
-        } else if (/빵|케이크|쿠키|과자|초콜릿|아이스크림|음료|에이드/i.test(foodName)) {
-          estCal = 350; cRatio = 0.7; pRatio = 0.05; fRatio = 0.25;
+        if (/튀김|치킨|돈까스|전|파스타|버거|피자|마라|샹궈|탕수육|까스/i.test(foodName)) {
+          estCal = 600; cRatio = 0.45; pRatio = 0.2; fRatio = 0.35;
+        } else if (/고기|구이|갈비|족발|보쌈|스테이크|삼겹|목살|닭/i.test(foodName)) {
+          estCal = 450; cRatio = 0.05; pRatio = 0.45; fRatio = 0.5;
+        } else if (/국|찌개|탕|스프|전골/i.test(foodName)) {
+          estCal = 280; cRatio = 0.35; pRatio = 0.35; fRatio = 0.3;
+        } else if (/면|라면|우동|파스타|국수|짜장|짬뽕/i.test(foodName)) {
+          estCal = 520; cRatio = 0.65; pRatio = 0.15; fRatio = 0.2;
+        } else if (/채소|샐러드|나물|과일|아메리카노|차|음료/i.test(foodName)) {
+          estCal = 120; cRatio = 0.7; pRatio = 0.2; fRatio = 0.1;
+        } else if (/빵|케이크|쿠키|과자|초콜릿|아이스크림|도넛|디저트/i.test(foodName)) {
+          estCal = 380; cRatio = 0.65; pRatio = 0.05; fRatio = 0.3;
         }
 
         baseData = {
