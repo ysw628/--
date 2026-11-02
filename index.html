@@ -126,7 +126,7 @@
             <option value="간식">☕ 간식</option>
           </select>
           <div class="relative">
-            <input type="text" id="foodInput" placeholder="예: 제육볶음 1공기" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-emerald-500 pr-8">
+            <input type="text" id="foodInput" placeholder="어떤 음식이든 입력해보세요 (예: 마라탕 1그릇, 삼겹살 200g)" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-emerald-500 pr-8">
             <button id="clearInputBtn" type="button" class="hidden absolute right-2.5 top-3 text-slate-400 hover:text-slate-600">
               <i data-lucide="x" class="w-4 h-4"></i>
             </button>
@@ -137,8 +137,8 @@
         <div class="flex flex-wrap gap-1.5 pt-1" id="quickTags">
           <span class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full cursor-pointer hover:bg-slate-200 transition" onclick="setQuickInput('쌀밥 1공기')">+ 쌀밥 1공기</span>
           <span class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full cursor-pointer hover:bg-slate-200 transition" onclick="setQuickInput('닭가슴살 100g')">+ 닭가슴살 100g</span>
+          <span class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full cursor-pointer hover:bg-slate-200 transition" onclick="setQuickInput('마라탕 1그릇')">+ 마라탕</span>
           <span class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full cursor-pointer hover:bg-slate-200 transition" onclick="setQuickInput('아메리카노 1잔')">+ 아메리카노</span>
-          <span class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full cursor-pointer hover:bg-slate-200 transition" onclick="setQuickInput('계란후라이 1개')">+ 계란후라이</span>
         </div>
 
         <button id="addFoodBtn" type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2.5 rounded-xl shadow-md transition flex items-center justify-center gap-1">
@@ -275,7 +275,6 @@
       navigator.serviceWorker.register(swURL).catch(() => {});
     }
 
-    // PWA Install Prompt Event
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -298,18 +297,350 @@
     document.getElementById('pwaInstallBtn').addEventListener('click', installPWA);
     document.getElementById('pwaBannerBtn').addEventListener('click', installPWA);
 
-    // --- 2. Database & State Management ---
+    // --- 2. Database & Comprehensive Food Categorization ---
     const foodDatabase = {
-      '제육볶음': { cal: 350, carbs: 12, protein: 28, fat: 20 },
+      // 밥/면류
       '쌀밥': { cal: 300, carbs: 65, protein: 6, fat: 1 },
       '현미밥': { cal: 280, carbs: 58, protein: 7, fat: 2 },
+      '볶음밥': { cal: 500, carbs: 70, protein: 12, fat: 18 },
+      '비빔밥': { cal: 550, carbs: 80, protein: 18, fat: 15 },
+      '김밥': { cal: 480, carbs: 75, protein: 14, fat: 12 },
+      '라면': { cal: 500, carbs: 75, protein: 10, fat: 18 },
+      '짜장면': { cal: 650, carbs: 100, protein: 18, fat: 20 },
+      '짬뽕': { cal: 550, carbs: 85, protein: 20, fat: 15 },
+      '칼국수': { cal: 420, carbs: 80, protein: 12, fat: 5 },
+      '우동': { cal: 400, carbs: 78, protein: 10, fat: 4 },
+      '파스타': { cal: 600, carbs: 75, protein: 18, fat: 22 },
+      '마라탕': { cal: 600, carbs: 45, protein: 25, fat: 35 },
+
+      // 고기/메인 요리
+      '제육볶음': { cal: 350, carbs: 12, protein: 28, fat: 20 },
       '닭가슴살': { cal: 165, carbs: 0, protein: 31, fat: 3.6 },
+      '삼겹살': { cal: 330, carbs: 0, protein: 17, fat: 29 },
+      '돈까스': { cal: 600, carbs: 50, protein: 25, fat: 32 },
+      '치킨': { cal: 290, carbs: 15, protein: 20, fat: 16 },
+      '피자': { cal: 280, carbs: 30, protein: 12, fat: 12 },
+      '햄버거': { cal: 500, carbs: 45, protein: 22, fat: 25 },
+      '족발': { cal: 400, carbs: 5, protein: 32, fat: 28 },
+      '보쌈': { cal: 380, carbs: 4, protein: 30, fat: 26 },
+      '소불고기': { cal: 320, carbs: 15, protein: 26, fat: 18 },
+
+      // 찌개/국/반찬
+      '김치찌개': { cal: 200, carbs: 10, protein: 15, fat: 10 },
+      '된장찌개': { cal: 150, carbs: 12, protein: 12, fat: 6 },
+      '순두부찌개': { cal: 220, carbs: 10, protein: 16, fat: 12 },
       '계란후라이': { cal: 90, carbs: 0.4, protein: 6, fat: 7 },
+      '계란말이': { cal: 160, carbs: 2, protein: 12, fat: 11 },
+      '샐러드': { cal: 120, carbs: 10, protein: 3, fat: 7 },
+
+      // 음료/디저트
+      '아메리카노': { cal: 10, carbs: 1, protein: 0.5, fat: 0 },
       '라떼': { cal: 180, carbs: 14, protein: 8, fat: 9 },
       '카페라떼': { cal: 180, carbs: 14, protein: 8, fat: 9 },
-      '아메리카노': { cal: 10, carbs: 1, protein: 0.5, fat: 0 },
-      '라면': { cal: 500, carbs: 75, protein: 10, fat: 18 },
-      '김치찌개': { cal: 200, carbs: 10, protein: 15, fat: 10 },
-      '돈까스': { cal: 600, carbs: 50, protein: 25, fat: 32 },
-      '샐러드': { cal: 120, carbs: 10, protein: 3, fat: 7 },
-      '바나나': { cal: 90, carbs: 23, protein:
+      '바나나': { cal: 90, carbs: 23, protein: 1, fat: 0.3 },
+      '사과': { cal: 80, carbs: 21, protein: 0.4, fat: 0.2 }
+    };
+
+    let userProfile = JSON.parse(localStorage.getItem('cal_user_profile')) || {
+      gender: 'male',
+      age: 25,
+      height: 170,
+      weight: 65,
+      activity: 1.55,
+      goal: 'maintain',
+      targetCal: 2000,
+      targetCarbs: 250,
+      targetProtein: 100,
+      targetFat: 55
+    };
+
+    let selectedDate = new Date().toISOString().split('T')[0];
+    let mealLogs = JSON.parse(localStorage.getItem('cal_meal_logs')) || {};
+
+    // --- 3. Body Info & Target Calculation ---
+    function calculateBodyMetrics() {
+      const g = document.getElementById('userGender').value;
+      const age = parseFloat(document.getElementById('userAge').value) || 25;
+      const h = parseFloat(document.getElementById('userHeight').value) || 170;
+      const w = parseFloat(document.getElementById('userWeight').value) || 65;
+      const act = parseFloat(document.getElementById('userActivity').value) || 1.55;
+      const goal = document.getElementById('userGoal').value;
+
+      let bmr = (10 * w) + (6.25 * h) - (5 * age);
+      bmr += (g === 'male') ? 5 : -161;
+
+      let tdee = bmr * act;
+      if (goal === 'loss') tdee -= 500;
+      if (goal === 'gain') tdee += 300;
+
+      tdee = Math.max(1200, Math.round(tdee));
+
+      const carbsG = Math.round((tdee * 0.5) / 4);
+      const proteinG = Math.round((tdee * 0.25) / 4);
+      const fatG = Math.round((tdee * 0.25) / 9);
+
+      document.getElementById('calculatedBMR').innerText = `${Math.round(bmr)} kcal`;
+      document.getElementById('calculatedTDEE').innerText = `${tdee} kcal`;
+
+      return {
+        gender: g, age, height: h, weight: w, activity: act, goal,
+        targetCal: tdee,
+        targetCarbs: carbsG,
+        targetProtein: proteinG,
+        targetFat: fatG
+      };
+    }
+
+    // --- 4. Chart & UI Rendering ---
+    let chartInstance = null;
+
+    function initChart() {
+      const ctx = document.getElementById('calDoughnutChart').getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          datasets: [{
+            data: [0, 2000],
+            backgroundColor: ['#10b981', '#f1f5f9'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          cutout: '78%',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { tooltip: { enabled: false } }
+        }
+      });
+    }
+
+    function updateUI() {
+      document.getElementById('targetCalText').innerText = userProfile.targetCal;
+      document.getElementById('targetCarbsText').innerText = userProfile.targetCarbs;
+      document.getElementById('targetProteinText').innerText = userProfile.targetProtein;
+      document.getElementById('targetFatText').innerText = userProfile.targetFat;
+
+      const profileSummaryText = `${userProfile.height}cm / ${userProfile.weight}kg (${userProfile.targetCal}kcal)`;
+      document.getElementById('userProfileSummary').querySelector('span').innerText = profileSummaryText;
+
+      const logs = mealLogs[selectedDate] || [];
+      let totalCal = 0, totalCarbs = 0, totalProtein = 0, totalFat = 0;
+
+      logs.forEach(item => {
+        totalCal += item.cal;
+        totalCarbs += item.carbs;
+        totalProtein += item.protein;
+        totalFat += item.fat;
+      });
+
+      document.getElementById('consumedCal').innerText = Math.round(totalCal);
+      
+      const carbsPct = Math.min(100, (totalCarbs / userProfile.targetCarbs) * 100);
+      const proteinPct = Math.min(100, (totalProtein / userProfile.targetProtein) * 100);
+      const fatPct = Math.min(100, (totalFat / userProfile.targetFat) * 100);
+
+      document.getElementById('carbsVal').innerText = Math.round(totalCarbs);
+      document.getElementById('carbsBar').style.width = `${carbsPct}%`;
+
+      document.getElementById('proteinVal').innerText = Math.round(totalProtein);
+      document.getElementById('proteinBar').style.width = `${proteinPct}%`;
+
+      document.getElementById('fatVal').innerText = Math.round(totalFat);
+      document.getElementById('fatBar').style.width = `${fatPct}%`;
+
+      const remainingCal = Math.max(0, userProfile.targetCal - totalCal);
+      chartInstance.data.datasets[0].data = [totalCal, remainingCal];
+      chartInstance.data.datasets[0].backgroundColor[0] = totalCal > userProfile.targetCal ? '#ef4444' : '#10b981';
+      chartInstance.update();
+
+      const listEl = document.getElementById('mealList');
+      document.getElementById('itemCount').innerText = `${logs.length}개`;
+
+      if (logs.length === 0) {
+        listEl.innerHTML = `
+          <div class="text-center py-8 text-slate-400 text-xs">
+            아직 기록된 식단이 없습니다.<br>오늘 먹은 음식을 입력해보세요!
+          </div>`;
+        return;
+      }
+
+      listEl.innerHTML = logs.map((item, idx) => `
+        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100/80 transition">
+          <div class="space-y-0.5">
+            <div class="flex items-center space-x-2">
+              <span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">${item.type}</span>
+              <span class="text-sm font-bold text-slate-800">${item.name}</span>
+              <span class="text-xs text-slate-400">(${item.portion}분량)</span>
+            </div>
+            <div class="text-[11px] text-slate-500">
+              탄 ${item.carbs}g · 단 ${item.protein}g · 지 ${item.fat}g
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <span class="text-sm font-black text-slate-700">${item.cal} <span class="text-[10px] font-normal text-slate-400">kcal</span></span>
+            <button type="button" onclick="deleteMeal(${idx})" class="text-slate-300 hover:text-red-500 transition">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // --- 5. AI / Universal Food Parsing System ---
+    function parseFoodInput(text) {
+      let foodName = text.trim();
+      let portion = 1.0;
+
+      // 단위 수량 파싱 (공기, 잔, 개, g 등)
+      const match = text.match(/([\d\.]+)\s*(공기|잔|개|그릇|인분|g|g개|조각|줄)?$/);
+      if (match) {
+        portion = parseFloat(match[1]);
+        if (match[2] === 'g') {
+          portion = portion / 100; // 100g 기준
+        }
+        foodName = text.replace(match[0], '').trim();
+      }
+
+      let baseData = null;
+
+      // 1. 기존 DB에서 탐색
+      for (let key in foodDatabase) {
+        if (foodName.includes(key)) {
+          baseData = foodDatabase[key];
+          foodName = key;
+          break;
+        }
+      }
+
+      // 2. DB에 없는 신규 음신의 경우 범용 칼로리 추정 알고리즘 적용
+      if (!baseData) {
+        let estCal = 300;
+        let cRatio = 0.5, pRatio = 0.2, fRatio = 0.3;
+
+        if (/튀김|치킨|돈까스|전|파스타|버거|피자|마라/i.test(foodName)) {
+          estCal = 550; cRatio = 0.4; pRatio = 0.2; fRatio = 0.4;
+        } else if (/고기|구이|갈비|족발|보쌈|스테이크|닭|계란/i.test(foodName)) {
+          estCal = 400; cRatio = 0.1; pRatio = 0.5; fRatio = 0.4;
+        } else if (/국|찌개|탕|스프/i.test(foodName)) {
+          estCal = 250; cRatio = 0.4; pRatio = 0.3; fRatio = 0.3;
+        } else if (/채소|샐러드|나물|과일|아메리카노|차/i.test(foodName)) {
+          estCal = 100; cRatio = 0.7; pRatio = 0.2; fRatio = 0.1;
+        } else if (/빵|케이크|쿠키|과자|초콜릿|아이스크림|음료|에이드/i.test(foodName)) {
+          estCal = 350; cRatio = 0.7; pRatio = 0.05; fRatio = 0.25;
+        }
+
+        baseData = {
+          cal: estCal,
+          carbs: Math.round((estCal * cRatio) / 4),
+          protein: Math.round((estCal * pRatio) / 4),
+          fat: Math.round((estCal * fRatio) / 9)
+        };
+      }
+
+      return {
+        name: foodName || text,
+        portion: portion,
+        cal: Math.round(baseData.cal * portion),
+        carbs: Math.round(baseData.carbs * portion),
+        protein: Math.round(baseData.protein * portion),
+        fat: Math.round(baseData.fat * portion)
+      };
+    }
+
+    // --- 6. Event Handlers ---
+    document.getElementById('datePicker').value = selectedDate;
+    document.getElementById('datePicker').addEventListener('change', (e) => {
+      selectedDate = e.target.value;
+      updateUI();
+    });
+
+    function handleAddFood(e) {
+      if (e) e.preventDefault();
+      
+      const input = document.getElementById('foodInput');
+      const text = input.value.trim();
+      if (!text) return false;
+
+      const type = document.getElementById('mealType').value;
+      const parsed = parseFoodInput(text);
+      parsed.type = type;
+
+      if (!mealLogs[selectedDate]) mealLogs[selectedDate] = [];
+      mealLogs[selectedDate].push(parsed);
+
+      localStorage.setItem('cal_meal_logs', JSON.stringify(mealLogs));
+      input.value = '';
+      document.getElementById('clearInputBtn').classList.add('hidden');
+      updateUI();
+      return false;
+    }
+
+    document.getElementById('mealForm').addEventListener('submit', handleAddFood);
+    document.getElementById('addFoodBtn').addEventListener('click', handleAddFood);
+
+    function setQuickInput(val) {
+      const input = document.getElementById('foodInput');
+      input.value = val;
+      document.getElementById('clearInputBtn').classList.remove('hidden');
+    }
+
+    window.deleteMeal = function(index) {
+      if (mealLogs[selectedDate]) {
+        mealLogs[selectedDate].splice(index, 1);
+        localStorage.setItem('cal_meal_logs', JSON.stringify(mealLogs));
+        updateUI();
+      }
+    };
+
+    document.getElementById('foodInput').addEventListener('input', (e) => {
+      const btn = document.getElementById('clearInputBtn');
+      if (e.target.value) btn.classList.remove('hidden');
+      else btn.classList.add('hidden');
+    });
+
+    document.getElementById('clearInputBtn').addEventListener('click', () => {
+      document.getElementById('foodInput').value = '';
+      document.getElementById('clearInputBtn').classList.add('hidden');
+    });
+
+    // Profile Modal Events
+    const profileModal = document.getElementById('profileModal');
+    const openModal = () => {
+      document.getElementById('userGender').value = userProfile.gender;
+      document.getElementById('userAge').value = userProfile.age;
+      document.getElementById('userHeight').value = userProfile.height;
+      document.getElementById('userWeight').value = userProfile.weight;
+      document.getElementById('userActivity').value = userProfile.activity;
+      document.getElementById('userGoal').value = userProfile.goal;
+      calculateBodyMetrics();
+      profileModal.classList.remove('hidden');
+    };
+
+    document.getElementById('profileModalOpen').addEventListener('click', openModal);
+    document.getElementById('userProfileSummary').addEventListener('click', openModal);
+    document.getElementById('profileModalClose').addEventListener('click', () => profileModal.classList.add('hidden'));
+
+    ['userGender', 'userAge', 'userHeight', 'userWeight', 'userActivity', 'userGoal'].forEach(id => {
+      document.getElementById(id).addEventListener('change', calculateBodyMetrics);
+      document.getElementById(id).addEventListener('input', calculateBodyMetrics);
+    });
+
+    document.getElementById('profileForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      userProfile = calculateBodyMetrics();
+      localStorage.setItem('cal_user_profile', JSON.stringify(userProfile));
+      profileModal.classList.add('hidden');
+      updateUI();
+    });
+
+    // App Init
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      initChart();
+      updateUI();
+    });
+  </script>
+</body>
+</html>
